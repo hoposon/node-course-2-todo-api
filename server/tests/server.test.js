@@ -144,7 +144,7 @@ describe('DELTE /todos/:id', () => {
 });
 
 describe('PATCH /todos/:id', () => {
-    it('should update the todo', (done) => {
+    it('should update the todo - test 1', (done) => {
         var id = todos[0]._id.toHexString();
         var updatedTodo = {
             text: 'Updated text',
@@ -159,6 +159,23 @@ describe('PATCH /todos/:id', () => {
                 expect(res.body.todo.text).toBe(updatedTodo.text);
                 expect(res.body.todo.completed).toBe(true);
                 expect(res.body.todo.completedAt).toBeA('number');
+            })
+            .end(done);
+    });
+
+    it('should update the todo - test 2', (done) => {
+        var id = todos[0]._id.toHexString();
+        var updatedTodo = {
+            text: 'Updated text',
+            completed: true
+        };
+
+        request(app)
+            .patch(`/todos/${id}`)
+            .send(updatedTodo)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo).toInclude(updatedTodo);
             })
             .end(done);
     });
