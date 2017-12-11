@@ -35,18 +35,6 @@ app.get('/todos', (req, res) => {
     });
 });
 
-app.post('/users', (req, res) => {
-    var user = new User({
-        email: req.body.email
-    });
-
-    user.save().then((doc) => {
-        res.send(doc);
-    }, (e) => {
-        res.status(400).send(e);
-    });
-});
-
 // GET /todos/1245896
 app.get('/todos/:id', (req, res) => {
     if(!ObjectID.isValid(req.params.id)) {
@@ -107,6 +95,35 @@ app.patch('/todos/:id', (req, res) => {
         res.status(400).send();
     });
 });
+
+app.post('/users', (req, res) => {
+    
+    var body = _.pick(req.body, ['email', 'password']);
+    var user = new User(body);
+
+    user.save().then(() => {
+        return user.generateAuthToken();
+    }).then((token) => {
+        res.header('x-auth', token).send(user);
+    }).catch((e) => {
+        res.status(400).send(e);
+    });
+});
+
+
+// app.post('/users', (req, res) => {
+    
+//     var body = _.pick(req.body, ['email', 'password']);
+//     var user = new User(body);
+
+//     // console.log(user);
+//     user.save().then((user) => {
+//         // console.log(user);
+//         res.send(user);
+//     }).catch((e) => {
+//         res.status(400).send(e);
+//     });
+// });
 
 app.listen(port,() => {
     console.log(`Started on port ${port}`);
