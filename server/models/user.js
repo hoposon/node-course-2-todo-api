@@ -41,6 +41,7 @@ var UserSchema = new mongoose.Schema({
     usePushEach: true 
 });
 
+// in methods, functions for User instance are defined
 // reduces parameters that shall be returned to user
 UserSchema.methods.toJSON = function() {
     var user = this;
@@ -67,8 +68,9 @@ UserSchema.methods.generateAuthToken = function() {
     })
 };
 
+// in statics, functions for User definition are defined
 UserSchema.statics.findByToken = function(token) {
-    var User= this;
+    var User = this;
     var decoded;
 
     try{
@@ -86,6 +88,29 @@ UserSchema.statics.findByToken = function(token) {
         '_id': decoded._id, // doesn't have to have quotes around _id
         'tokens.token': token,
         'tokens.access':'auth'
+    });
+};
+
+UserSchema.statics.findByCredentials = function(email, password) {
+    var User = this;
+
+    return User.findOne({email}).then((user) => {
+        if(!user) {
+            return Promise.reject();
+        }
+
+        return new Promise((resolve, reject) => {
+            bcrypt.compare(password, user.password, (err, res) => {
+                if(err) {
+                    reject();
+                } else if (res) {
+                    resolve(user);
+                } else {
+                    reject();
+                }
+                
+            })
+        })
     });
 };
 
