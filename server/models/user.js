@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
 
 var UserSchema = new mongoose.Schema({
     email: {
@@ -76,7 +77,7 @@ UserSchema.statics.findByToken = function(token) {
         // return new Promise((resolve, reject) => {
         //     reject();
         // });
-        
+
         // same as
         return Promise.reject();
     }
@@ -87,6 +88,27 @@ UserSchema.statics.findByToken = function(token) {
         'tokens.access':'auth'
     });
 };
+
+// mongoose middleware
+// this is called before action specified in first argument (save)
+// before user is saved
+UserSchema.pre('save', function(next) {
+    var user = this;
+
+    // this checks if password parameter is going to be modified during the save
+    // otherwise hashing funcion inside this block would hash hashed value
+    // over and over again
+    if(user.isModified('password')) {
+        bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(user.password, salt, (err, hash) => {
+                user.password = hash;
+                next();
+            });
+        });
+    } else {
+        next();
+    }
+});
 
 var User = mongoose.model('User', UserSchema);
 
