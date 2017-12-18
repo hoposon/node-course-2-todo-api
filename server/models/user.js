@@ -42,6 +42,7 @@ var UserSchema = new mongoose.Schema({
 });
 
 // in methods, functions for User instance are defined
+// -----------------
 // reduces parameters that shall be returned to user
 UserSchema.methods.toJSON = function() {
     var user = this;
@@ -50,6 +51,7 @@ UserSchema.methods.toJSON = function() {
     return _.pick(userObject, ['_id', 'email']);
 }
 
+// generates token and stores it to DB
 UserSchema.methods.generateAuthToken = function() {
     var user = this;
 
@@ -68,7 +70,23 @@ UserSchema.methods.generateAuthToken = function() {
     })
 };
 
+// deletes user's token
+UserSchema.methods.removeToken = function(token) {
+    var user = this;
+
+    return user.update({
+        // pulls an object that matches the condition out of the array (deletes id)
+        $pull: {
+            tokens: {
+                token: token
+            }
+        }
+    });
+};
+
 // in statics, functions for User definition are defined
+// --------------------
+// finds user by token
 UserSchema.statics.findByToken = function(token) {
     var User = this;
     var decoded;
@@ -91,6 +109,7 @@ UserSchema.statics.findByToken = function(token) {
     });
 };
 
+// finds user by email and password
 UserSchema.statics.findByCredentials = function(email, password) {
     var User = this;
 
